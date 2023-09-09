@@ -197,6 +197,31 @@ for folder in "${converted_folders[@]}"; do
   echo "$folder"
 done
     }
+
+check_folders_exist() {
+  local folder_count=0
+  for entry in "${mount_point}/${source_path}"/*; do
+    base_entry=$(basename "$entry")
+    if [ -d "$entry" ] && ! zfs list -o name | grep -q "^${source_path}/${base_entry}$"; then
+      folder_count=$((folder_count + 1))
+    fi
+  done
+
+  if [ "$folder_count" -eq 0 ]; then
+    echo "No regular folders found in ${mount_point}/${source_path}."
+    return 1
+  else
+    return 0
+  fi
+}
+
+# Run the check first
+if ! check_folders_exist; then
+    echo "Aborting the script as no regular folders were found."
+    exit 1
+fi
+
+
 #
 #
 # Run the functions
